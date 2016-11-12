@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Your types suck</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<link rel="stylesheet" href="../style.css">
+  </head>
+  <body>
+	  	<header>
+			<div class="container">
+				<h1>
+					Your types suck<br />
+					<small>And you should <s>feel bad</s> replace them with better ones</small>
+				</h1>
+			</div>
+			<div class="byline">
+				<div class="container">
+					<p>
+						By 
+						<a href="https://twitter.com/chamooktweets">Adam 
+						Guest</a> - XX April 2016 
+					</p>
+				</div>
+			</div>
+		</header>
+		<article class="container">
+			<section>
+				<p>
+                    Using the right types can help make your code cleaner and easier to understand, 
+                    it can also save you writing a bunch of boilerplate code by encapsulating it in
+                    the right place. The downside is that it takes a bit more thought than just 
+                    using primitives for everything, but I believe in you! You can totes do this!
+                </p>
+                <h3>Super Exciting Example</h3>
+                <p>
+                    Imagine that you're developing the next billion dollar app <em>Poopr</em> - 
+                    which sends notifications when you poop. You are clearly a rockstar, ninja 
+                    developer and you are going to <em>revolutionize</em> this codebase with your mad
+                    skillz (in constrained types.) So let's take a look at the current state of affairs, 
+                    by looking at the main notify function:
+                </p>
+                <code>
+                    public void Notify(
+                        string recipientEmail,
+                        string senderEmail,
+                        string Body)
+                    {
+                        //...call a web service to send the notification
+                    }
+                </code>
+                <h3>Parts Become Whole</h3>
+                <p>
+                    Our first consideration about these parameters is if they would be used 
+                    individually or if they only make sense together. For sending a notification 
+                    like this, it's clear that they're all required for it to be sent so it makes
+                    sense to put them all together in one type. Given that they are all 
+                    required for this to work, it doesn't make any sense to let any of them be 
+                    null either, so we should guard against that before we go further to ensure 
+                    that our prerequisites are met before attempting to send a notification.
+                </p>
+                <code>
+                    public class Notification
+                    {
+                        public string RecipientEmail { get; }
+                        public string SenderEmail { get; }
+                        public string Body { get; }
+                        
+                        public Notification(
+                            string recipientEmail,
+                            string senderEmail
+                            string body)
+                        {
+                            if(string.IsNullOrWhiteSpace(recipientEmail))
+                                throw new ArgumentNullException(nameof(recipientEmail));
+                            if(string.IsNullOrWhiteSpace(senderEmail))
+                                throw new ArgumentNullException(nameof(senderEmail));
+                            if(string.IsNullOrWhiteSpace(body))
+                                throw new ArgumentNullException(nameof(body));
+                                
+                            RecipientEmail = recipientEmail;
+                            SenderEmail = senderEmail;
+                            Body = body;
+                        }
+                    }
+                    
+                    public void Notify(Notification notification)
+                    {
+                        if(notification == null)
+                            throw new ArgumentNullException(nameof(notification));
+                            
+                        //...call a web service to send the notification
+                    }
+                </code>
+                <p>
+                    
+                </p>
+			</section>
+		</article>
+		<footer class="page-footer">
+			<div class="container">
+				<a href="../index.html">&lt;- More Words About Code
+			</div>
+		</footer>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>

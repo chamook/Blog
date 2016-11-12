@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Operators and Builders</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<link rel="stylesheet" href="../style.css">
+  </head>
+  <body>
+	  	<header>
+			<div class="container">
+				<h1>
+					Operators and Builders<br />
+					<small>Simpler code through fancy features</small>
+				</h1>
+			</div>
+			<div class="byline">
+				<div class="container">
+					<p>
+						By 
+						<a href="https://twitter.com/chamooktweets">Adam 
+						Guest</a> - XX June 2016 
+					</p>
+				</div>
+			</div>
+		</header>
+		<article class="container">
+			<section>
+				<p>
+                   When using fancy monadic types in F# there are a couple of ways of 
+                   reducing noise for common functions (like bind and map) that can help to
+                   make your code more readable. Below are some examples of how both 
+                   operators and computation expressions (builders) can be used for that (and how 
+                   they'll make you look <em>super cool</em>.)
+                </p>
+                <h2>Types</h2>
+                <p>
+                    One caveat of this is that these are limited to the same type (mostly) being 
+                    used throughout. You can use trickery with computation expressions to handle
+                    multiple types, but they have to return the same type; likewise you can define
+                    operators for each type, but that leads to weird non-standard operators that
+                    can make your code more confusing for newcomers. The examples below will all be
+                    for an AsyncResult type (i.e. Async&lt;Result&lt;'success,'failure&gt;&gt;) 
+                    <s>because it is the best type</s> because it's the one that comes up most 
+                    frequently for me.
+                </p>
+                <p>
+                    If the concept of a Result type is new to you, now would probably be a good time
+                    for you to <a href="">go learn about it</a>. Don't worry, this'll still be here 
+                    when you get back...
+                </p>
+                <p>First we need a Result type and the appropriate functions for working with it:</p>
+                <script src="https://gist.github.com/chamook/0bf33e0735ade8b053f50a3f87f17b94.js"></script>
+                <p>
+                    Then after using this a few times in code that has to interact with 
+                    outside things, we'll get fed up and make an async version:
+                </p>
+                <script src="https://gist.github.com/chamook/e216da480582b6aa8848ec116a28858d.js"></script>
+                <p>
+                    Now we have our types setup for awesome async railway oriented programming, let's put
+                    together a simple example to show how this works - we'll define a function in a pretend 
+                    app to lookup a user from their id and then update their email address in our user store;
+                    we'll also make a log of the change being made as part of a history store.
+                </p>
+                <p>The functions we'll be calling are of the following forms:</p>
+                <code>
+                    getUserFromDb : UserId -> Async<Result<UserRecord, Error>><br />
+                    saveUserToDb  : UserRecord -> Async<Result<Unit, Error>><br />
+                    logUserEvent  : UserEvent -> Async<Result<Unit, Error>>
+                </code><br />
+                <code>
+                    let updateUserEmail userId newEmail = 
+                        let updatedUser = 
+                            userId 
+                            |> getUserFromDb 
+                            |> AsyncResult.map (fun u -> {u with Email = newEmail}) 
+                            |> AsyncResult.bind (saveUserToDb)  
+                </code>
+                <p> 
+                    This is nice, fairly straightforward code - but the calls to bind and map just add 
+                    clutter and distract from what would otherwise be a really clear list of operations. 
+                    Let's see if we can make this cleaner with some fancy techniques...
+                </p>
+                <h2>Operators</h2>
+                <p>
+                    F# includes a few built in operators like <code>|&gt;</code> to perform actions that 
+                    are done a lot and can safely be reduced to funky little arrow shapes to declutter code 
+                    without harming readability, it also lets you define your own custom operators 
+                    so that you can do the same for things that clutter up your code.
+                </p>
+                <p>
+                    The two functions that we want to create operators for are map and bind, and as these 
+                    are well known functions, it stands to reason that they might have well known 
+                    standard operators - so we could browse <a href="https://www.haskell.org/hoogle/">Hoogle</a> 
+                    like the functional Haskell hipsters that we aspire to be, but it turns out that we 
+                    can't use the most common operator for map anyways because it's reserved in F# - so we 
+                    check to see if Scott Wlaschin has written about it, because he's dead clever about 
+                    stuff like this, and he writes a lot and it turns out that 
+                    <a href="http://fsharpforfunandprofit.com/posts/elevated-world/#map">he has</a>.
+                    Map is often given the operator <code>&lt;$&gt;</code> but that's reserved in F# so 
+                    we use <code>&lt;!&gt;</code>, and Bind is given <code>&gt;&gt;=</code>.
+                </p>
+                <p> 
+                    Now we know what to call them, we can define our operators:
+                </p>
+                <code>
+                    let (<!>) a b = AsyncResult.map b a
+
+                    let (>>=) a b = AsyncResult.bind b a
+                </code>
+                <p>
+                    With our operators defined (and looking very snazzy) we can rewrite our example function:
+                </p>
+                <code></code>
+                <p>
+                    Overall, this is a bunch cleaner, we've removed a lot of noise and that lets us focus
+                    on just the actions being performed instead of being distracted by error handling logic.
+                    But we can also see some weaknesses to this approach: it relies on all the functions being chainable
+                </p>
+                <h2>Builders</h2>
+
+			</section>
+		</article>
+		<footer class="page-footer">
+			<div class="container">
+				<a href="../index.html">&lt;- More Words About Code
+			</div>
+		</footer>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
